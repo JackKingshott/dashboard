@@ -1,10 +1,20 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-})
+function getStripe(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Stripe is not configured. Add STRIPE_SECRET_KEY to your environment variables.')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2026-04-22.dahlia',
+  })
+}
+
+export function isStripeConfigured() {
+  return !!process.env.STRIPE_SECRET_KEY
+}
 
 export async function createStripeCustomer(email: string, name: string) {
+  const stripe = getStripe()
   const customer = await stripe.customers.create({ email, name })
   return customer.id
 }
@@ -15,6 +25,7 @@ export async function createStripeInvoice(params: {
   dueDate?: Date
   currency: string
 }) {
+  const stripe = getStripe()
   const invoice = await stripe.invoices.create({
     customer: params.customerId,
     currency: params.currency.toLowerCase(),
@@ -39,5 +50,11 @@ export async function createStripeInvoice(params: {
 }
 
 export async function sendStripeInvoice(stripeInvoiceId: string) {
+  const stripe = getStripe()
   return stripe.invoices.sendInvoice(stripeInvoiceId)
+}
+
+export async function constructWebhookEvent(body: string, signature: string) {
+  const stripe = getStripe()
+  return stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
 }
