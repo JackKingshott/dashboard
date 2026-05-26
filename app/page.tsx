@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { Greeting } from '@/components/dashboard/greeting'
 import { DashboardStats } from '@/components/dashboard/stats'
 import { RecentInvoices } from '@/components/dashboard/recent-invoices'
 import { UpcomingMeetings } from '@/components/dashboard/upcoming-meetings'
@@ -8,6 +9,8 @@ import { RevenueChart } from '@/components/dashboard/revenue-chart'
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
+      <Greeting />
+
       <Suspense fallback={<StatsSkeleton />}>
         <DashboardStats />
       </Suspense>
@@ -21,7 +24,6 @@ export default function DashboardPage() {
             <RecentInvoices />
           </Suspense>
         </div>
-
         <div className="space-y-6">
           <Suspense fallback={<ListSkeleton />}>
             <UpcomingMeetings />
@@ -44,11 +46,5 @@ function StatsSkeleton() {
     </div>
   )
 }
-
-function ChartSkeleton() {
-  return <div className="h-64 rounded-xl bg-gray-100 animate-pulse" />
-}
-
-function ListSkeleton() {
-  return <div className="h-48 rounded-xl bg-gray-100 animate-pulse" />
-}
+function ChartSkeleton() { return <div className="h-64 rounded-xl bg-gray-100 animate-pulse" /> }
+function ListSkeleton() { return <div className="h-48 rounded-xl bg-gray-100 animate-pulse" /> }

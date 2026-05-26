@@ -4,8 +4,8 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { Topbar } from '@/components/layout/topbar'
 
 export const metadata: Metadata = {
-  title: 'Agency HQ',
-  description: 'Marketing agency management dashboard',
+  title: 'Scale Storm',
+  description: 'Scale Storm business dashboard',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
