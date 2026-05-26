@@ -1,6 +1,13 @@
-import type { Client, Task, ClientNote, BillingType, ClientStatus, TaskPriority, TaskStatus } from '@/types'
+import type { Client, Task, ClientNote, Invoice, InvoiceItem, Meeting, TaskPriority, TaskStatus, ClientStatus, BillingType, InvoiceStatus } from '@/types'
 
-const KEYS = { clients: 'ss_clients', tasks: 'ss_tasks', notes: 'ss_notes' }
+const KEYS = {
+  clients: 'ss_clients',
+  tasks: 'ss_tasks',
+  notes: 'ss_notes',
+  invoices: 'ss_invoices',
+  invoice_items: 'ss_invoice_items',
+  meetings: 'ss_meetings',
+}
 
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -18,6 +25,8 @@ function save<T>(key: string, data: T[]) {
 export function isUsingLocalStore() {
   return !process.env.NEXT_PUBLIC_SUPABASE_URL
 }
+
+// ─── Clients ────────────────────────────────────────────────────────────────
 
 export const localClients = {
   list(): Client[] { return load<Client>(KEYS.clients) },
@@ -39,6 +48,8 @@ export const localClients = {
     save(KEYS.notes, load<ClientNote>(KEYS.notes).filter(n => n.client_id !== id))
   },
 }
+
+// ─── Tasks ───────────────────────────────────────────────────────────────────
 
 export const localTasks = {
   list(): Task[] { return load<Task>(KEYS.tasks) },
@@ -64,7 +75,7 @@ export const localTasks = {
   },
   update(id: string, data: Partial<Omit<Task, 'id' | 'created_at'>>): Task | null {
     const all = load<Task>(KEYS.tasks)
-    let updated = all.map(t => {
+    const updated = all.map(t => {
       if (t.id !== id) return t
       const next = { ...t, ...data, updated_at: now() }
       if (data.client_id !== undefined) {
@@ -82,6 +93,8 @@ export const localTasks = {
   },
 }
 
+// ─── Notes ───────────────────────────────────────────────────────────────────
+
 export const localNotes = {
   list(clientId: string): ClientNote[] {
     return load<ClientNote>(KEYS.notes).filter(n => n.client_id === clientId)
@@ -94,5 +107,95 @@ export const localNotes = {
   },
   delete(id: string) {
     save(KEYS.notes, load<ClientNote>(KEYS.notes).filter(n => n.id !== id))
+  },
+}
+
+// ─── Invoices ────────────────────────────────────────────────────────────────
+
+export const localInvoices = {
+  list(): Invoice[] {
+    const invoices = load<Invoice>(KEYS.invoices)
+    const items = load<InvoiceItem>(KEYS.invoice_items)
+    const clients = load<Client>(KEYS.clients)
+    return invoices.map(inv => ({
+      ...inv,
+      items: items.filter(i => i.invoice_id === inv.id),
+      client: inv.client_id ? (() => { const c = clients.find(cl => cl.id === inv.client_id); return c ? { id: c.id, name: c.name, company: c.company, email: c.email } : undefined })() : undefined,
+    }))
+  },
+  get(id: string): Invoice | null {
+    return this.list().find(i => i.id === id) ?? null
+  },
+  add(data: Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'client' | 'items'> & { items?: Omit<InvoiceItem, 'id' | 'invoice_id'>[] }): Invoice {
+    const { items: itemsData, ...invoiceData } = data
+    const inv: Omit<Invoice, 'client' | 'items'> = { ...invoiceData, id: uid(), created_at: now(), updated_at: now() }
+    const allInvoices = load<Invoice>(KEYS.invoices)
+    save(KEYS.invoices, [inv, ...allInvoices])
+    if (itemsData?.length) {
+      const allItems = load<InvoiceItem>(KEYS.invoice_items)
+      const newItems: InvoiceItem[] = itemsData.map(i => ({ ...i, id: uid(), invoice_id: inv.id }))
+      save(KEYS.invoice_items, [...allItems, ...newItems])
+    }
+    return this.get(inv.id)!
+  },
+  update(id: string, data: Partial<Omit<Invoice, 'id' | 'created_at' | 'client' | 'items'>>): Invoice | null {
+    const all = load<Invoice>(KEYS.invoices)
+    const updated = all.map(i => i.id === id ? { ...i, ...data, updated_at: now() } : i)
+    save(KEYS.invoices, updated)
+    return this.get(id)
+  },
+  delete(id: string) {
+    save(KEYS.invoices, load<Invoice>(KEYS.invoices).filter(i => i.id !== id))
+    save(KEYS.invoice_items, load<InvoiceItem>(KEYS.invoice_items).filter(i => i.invoice_id !== id))
+  },
+  nextNumber(): string {
+    const all = load<Invoice>(KEYS.invoices)
+    const nums = all.map(i => parseInt(i.invoice_number.replace(/\D/g, '')) || 0)
+    const next = nums.length ? Math.max(...nums) + 1 : 1
+    return `INV-${String(next).padStart(4, '0')}`
+  },
+}
+
+// ─── Meetings ────────────────────────────────────────────────────────────────
+
+export const localMeetings = {
+  list(): Meeting[] {
+    const meetings = load<Meeting>(KEYS.meetings)
+    const clients = load<Client>(KEYS.clients)
+    return meetings
+      .map(m => ({
+        ...m,
+        client: m.client_id ? (() => { const c = clients.find(cl => cl.id === m.client_id); return c ? { id: c.id, name: c.name, company: c.company } : undefined })() : undefined,
+      }))
+      .sort((a, b) => {
+        const da = new Date(`${a.date}T${a.start_time}`)
+        const db = new Date(`${b.date}T${b.start_time}`)
+        return db.getTime() - da.getTime()
+      })
+  },
+  upcoming(): Meeting[] {
+    const today = new Date().toISOString().split('T')[0]
+    return this.list()
+      .filter(m => m.date >= today)
+      .sort((a, b) => {
+        const da = new Date(`${a.date}T${a.start_time}`)
+        const db = new Date(`${b.date}T${b.start_time}`)
+        return da.getTime() - db.getTime()
+      })
+  },
+  get(id: string): Meeting | null { return this.list().find(m => m.id === id) ?? null },
+  add(data: Omit<Meeting, 'id' | 'created_at' | 'updated_at' | 'client'>): Meeting {
+    const all = load<Meeting>(KEYS.meetings)
+    const meeting: Meeting = { ...data, id: uid(), created_at: now(), updated_at: now() }
+    save(KEYS.meetings, [meeting, ...all])
+    return this.get(meeting.id)!
+  },
+  update(id: string, data: Partial<Omit<Meeting, 'id' | 'created_at' | 'client'>>): Meeting | null {
+    const all = load<Meeting>(KEYS.meetings)
+    save(KEYS.meetings, all.map(m => m.id === id ? { ...m, ...data, updated_at: now() } : m))
+    return this.get(id)
+  },
+  delete(id: string) {
+    save(KEYS.meetings, load<Meeting>(KEYS.meetings).filter(m => m.id !== id))
   },
 }

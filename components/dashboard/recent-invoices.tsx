@@ -1,27 +1,14 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { localInvoices, isUsingLocalStore } from '@/lib/local-store'
 import type { Invoice, InvoiceStatus } from '@/types'
-
-async function fetchRecentInvoices() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return []
-  try {
-    const supabase = createAdminClient()
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('*, client:clients(id, name, company)')
-      .order('created_at', { ascending: false })
-      .limit(5)
-    if (error) return []
-    return (data ?? []) as Invoice[]
-  } catch {
-    return []
-  }
-}
 
 const statusConfig: Record<InvoiceStatus, { label: string; variant: 'success' | 'default' | 'destructive' | 'secondary' | 'warning' }> = {
   paid: { label: 'Paid', variant: 'success' },
@@ -31,8 +18,19 @@ const statusConfig: Record<InvoiceStatus, { label: string; variant: 'success' | 
   cancelled: { label: 'Cancelled', variant: 'secondary' },
 }
 
-export async function RecentInvoices() {
-  const invoices = await fetchRecentInvoices()
+export function RecentInvoices() {
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+
+  useEffect(() => {
+    if (isUsingLocalStore()) {
+      setInvoices(localInvoices.list().slice(0, 5))
+      return
+    }
+    fetch('/api/invoices')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setInvoices(data.slice(0, 5)) })
+      .catch(() => {})
+  }, [])
 
   return (
     <Card>
@@ -65,15 +63,12 @@ export async function RecentInvoices() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {invoices.map((inv) => {
+                {invoices.map(inv => {
                   const cfg = statusConfig[inv.status] ?? statusConfig.draft
                   return (
-                    <tr key={inv.id} className="group hover:bg-gray-50/50 transition-colors">
+                    <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="py-3 pr-4">
-                        <Link
-                          href={`/invoices/${inv.id}`}
-                          className="font-medium text-blue-600 hover:underline"
-                        >
+                        <Link href={`/invoices/${inv.id}`} className="font-medium text-blue-600 hover:underline">
                           {inv.invoice_number}
                         </Link>
                       </td>

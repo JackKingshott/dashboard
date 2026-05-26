@@ -72,6 +72,20 @@ export interface Invoice {
   updated_at: string
 }
 
+export interface Meeting {
+  id: string
+  title: string
+  date: string
+  start_time: string
+  end_time: string
+  client_id: string | null
+  client?: Pick<Client, 'id' | 'name' | 'company'>
+  attendees: string
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
 export interface CalendarEvent {
   id: string
   summary: string
@@ -80,13 +94,4 @@ export interface CalendarEvent {
   end: { dateTime?: string; date?: string }
   attendees?: { email: string; displayName?: string }[]
   htmlLink?: string
-}
-
-export interface DashboardStats {
-  revenueThisMonth: number
-  outstandingTotal: number
-  overdueCount: number
-  activeClients: number
-  tasksDueToday: number
-  currency: string
 }

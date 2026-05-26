@@ -7,6 +7,7 @@ const titles: Record<string, string> = {
   '/crm': 'Clients',
   '/invoices': 'Invoices',
   '/todo': 'To-Do',
+  '/meetings': 'Meetings',
   '/calendar': 'Calendar',
   '/settings': 'Settings',
 }

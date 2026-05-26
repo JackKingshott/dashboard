@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, FileText, CheckSquare, Calendar, Settings, Zap } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, CheckSquare, CalendarDays, Settings, Zap, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const nav = [
@@ -9,7 +9,8 @@ const nav = [
   { href: '/crm', label: 'Clients', icon: Users },
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/todo', label: 'To-Do', icon: CheckSquare },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/meetings', label: 'Meetings', icon: Video },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
