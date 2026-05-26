@@ -128,10 +128,10 @@ function TaskForm({ open, onOpenChange, onSave, clients, initial }: TaskFormProp
           {clients.length > 0 && (
             <div className="space-y-1.5">
               <Label>Client (optional)</Label>
-              <Select value={form.client_id} onValueChange={v => set('client_id', v)}>
+              <Select value={form.client_id || 'none'} onValueChange={v => set('client_id', v === 'none' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="No client" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No client</SelectItem>
+                  <SelectItem value="none">No client</SelectItem>
                   {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
