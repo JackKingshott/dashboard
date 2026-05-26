@@ -251,10 +251,12 @@ export default function MeetingsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Meeting | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setMeetings(localMeetings.list())
     setClients(localClients.list())
+    setLoading(false)
   }, [])
 
   function handleSave(m: Meeting) {
@@ -277,6 +279,22 @@ export default function MeetingsPage() {
   const today = new Date().toISOString().split('T')[0]
   const upcoming = meetings.filter(m => m.date >= today).sort((a, b) => new Date(`${a.date}T${a.start_time}`).getTime() - new Date(`${b.date}T${b.start_time}`).getTime())
   const past = meetings.filter(m => m.date < today).sort((a, b) => new Date(`${b.date}T${b.start_time}`).getTime() - new Date(`${a.date}T${a.start_time}`).getTime())
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Meetings</h1>
+            <p className="mt-1 text-sm text-gray-500">Loading...</p>
+          </div>
+        </div>
+        <div className="flex justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

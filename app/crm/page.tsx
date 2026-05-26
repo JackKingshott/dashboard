@@ -115,94 +115,98 @@ export default function CrmPage() {
         <div className="flex justify-center py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 py-16 text-center">
-          <div className="rounded-full bg-gray-100 p-4 mb-4">
-            <Users className="h-8 w-8 text-gray-400" />
-          </div>
-          <p className="text-sm font-medium text-gray-900">
-            {search ? 'No clients match your search' : 'No clients yet'}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {search ? 'Try a different search term' : 'Add your first client to get started'}
-          </p>
-          {!search && (
-            <Button className="mt-4" onClick={openAdd}>
-              <Plus className="h-4 w-4" />
-              Add Client
-            </Button>
-          )}
-        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map(client => {
-            const cfg = statusConfig[client.status]
-            return (
-              <Link key={client.id} href={`/crm/${client.id}`}>
-                <Card className="h-full cursor-pointer transition-shadow hover:shadow-md group">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-900 truncate">{client.name}</p>
-                        {client.company && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5 truncate">
-                            <Building2 className="h-3 w-3 shrink-0" />
-                            {client.company}
+        <>
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 py-16 text-center">
+              <div className="rounded-full bg-gray-100 p-4 mb-4">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-900">
+                {search ? 'No clients match your search' : 'No clients yet'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {search ? 'Try a different search term' : 'Add your first client to get started'}
+              </p>
+              {!search && (
+                <Button className="mt-4" onClick={openAdd}>
+                  <Plus className="h-4 w-4" />
+                  Add Client
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {filtered.map(client => {
+                const cfg = statusConfig[client.status]
+                return (
+                  <Link key={client.id} href={`/crm/${client.id}`}>
+                    <Card className="h-full cursor-pointer transition-shadow hover:shadow-md group">
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-gray-900 truncate">{client.name}</p>
+                            {client.company && (
+                              <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                                <Building2 className="h-3 w-3 shrink-0" />
+                                {client.company}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                            <button
+                              onClick={e => openEdit(e, client)}
+                              className="rounded p-1 text-gray-300 hover:text-blue-600 hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Edit client"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={e => { e.preventDefault(); e.stopPropagation(); handleDelete(client.id) }}
+                              className="rounded p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Delete client"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-gray-500 flex items-center gap-1.5 truncate">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            {client.email}
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 ml-2 shrink-0">
-                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                        <button
-                          onClick={e => openEdit(e, client)}
-                          className="rounded p-1 text-gray-300 hover:text-blue-600 hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Edit client"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={e => { e.preventDefault(); e.stopPropagation(); handleDelete(client.id) }}
-                          className="rounded p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Delete client"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <p className="text-xs text-gray-500 flex items-center gap-1.5 truncate">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        {client.email}
-                      </p>
-                      {client.phone && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1.5">
-                          <Phone className="h-3 w-3 shrink-0" />
-                          {client.phone}
-                        </p>
-                      )}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
-                      <span className="text-xs text-gray-400 capitalize">{client.billing_type} billing</span>
-                      {client.retainer_amount ? (
-                        <span className="text-xs font-medium text-gray-700">
-                          {formatCurrency(client.retainer_amount, client.currency)}/mo
-                        </span>
-                      ) : null}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+                          {client.phone && (
+                            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              {client.phone}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
+                          <span className="text-xs text-gray-400 capitalize">{client.billing_type} billing</span>
+                          {client.retainer_amount ? (
+                            <span className="text-xs font-medium text-gray-700">
+                              {formatCurrency(client.retainer_amount, client.currency)}/mo
+                            </span>
+                          ) : null}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
 
-      <ClientDialog
-        open={dialogOpen}
-        onOpenChange={open => { setDialogOpen(open); if (!open) setEditingClient(null) }}
-        onSuccess={handleSaved}
-        client={editingClient}
-      />
+          <ClientDialog
+            open={dialogOpen}
+            onOpenChange={open => { setDialogOpen(open); if (!open) setEditingClient(null) }}
+            onSuccess={handleSaved}
+            client={editingClient}
+          />
+        </>
+      )}
     </div>
   )
 }

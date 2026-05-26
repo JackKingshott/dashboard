@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { formatCurrency, CURRENCIES } from '@/lib/utils'
+import { localClients, localInvoices, isUsingLocalStore } from '@/lib/local-store'
 import type { Client } from '@/types'
 
 interface LineItem {
@@ -42,10 +43,11 @@ export default function NewInvoicePage() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   const [form, setForm] = useState({
     client_id: '',
-    invoice_number: generateInvoiceNumber(),
+    invoice_number: '',
     currency: 'GBP',
     due_date: '',
     notes: '',
@@ -53,14 +55,22 @@ export default function NewInvoicePage() {
   })
 
   const [items, setItems] = useState<LineItem[]>([
-    { id: generateId(), description: '', quantity: 1, unit_price: 0, amount: 0 },
+    { id: '1', description: '', quantity: 1, unit_price: 0, amount: 0 },
   ])
 
   useEffect(() => {
-    fetch('/api/clients')
-      .then((r) => r.json())
-      .then((data) => Array.isArray(data) && setClients(data))
-      .catch(() => {})
+    if (isUsingLocalStore()) {
+      setClients(localClients.list())
+      setForm(f => ({ ...f, invoice_number: localInvoices.nextNumber() }))
+    } else {
+      setForm(f => ({ ...f, invoice_number: generateInvoiceNumber() }))
+      fetch('/api/clients')
+        .then((r) => r.json())
+        .then((data) => Array.isArray(data) && setClients(data))
+        .catch(() => {})
+    }
+    setItems([{ id: generateId(), description: '', quantity: 1, unit_price: 0, amount: 0 }])
+    setMounted(true)
   }, [])
 
   function setField(field: string, value: string) {
@@ -108,6 +118,24 @@ export default function NewInvoicePage() {
     }
     setLoading(true)
     try {
+      if (isUsingLocalStore()) {
+        const invoice = localInvoices.add({
+          ...form,
+          tax_rate: taxRate,
+          subtotal,
+          tax_amount: taxAmount,
+          total,
+          status: (send ? 'sent' : 'draft') as 'sent' | 'draft',
+          client_id: form.client_id || null,
+          items: items.map(({ id: _id, ...item }) => item),
+          stripe_invoice_id: null,
+          sent_at: send ? new Date().toISOString() : null,
+          paid_at: null,
+          stripe_payment_link: null,
+        })
+        router.push(`/invoices/${invoice.id}`)
+        return
+      }
       const res = await fetch('/api/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,6 +159,14 @@ export default function NewInvoicePage() {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex justify-center py-24">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      </div>
+    )
   }
 
   return (

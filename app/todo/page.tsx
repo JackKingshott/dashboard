@@ -202,6 +202,24 @@ function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
   )
 }
 
+interface TaskListProps {
+  items: Task[]
+  onToggle: (id: string, done: boolean) => void
+  onDelete: (id: string) => void
+  onEdit: (task: Task) => void
+}
+
+function TaskList({ items, onToggle, onDelete, onEdit }: TaskListProps) {
+  if (items.length === 0) return <div className="text-center py-10 text-sm text-gray-400">No tasks here</div>
+  return (
+    <div className="space-y-2">
+      {items.map(t => (
+        <TaskCard key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />
+      ))}
+    </div>
+  )
+}
+
 export default function TodoPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -258,16 +276,7 @@ export default function TodoPage() {
   const thisWeek = active.filter(t => !isToday(t.due_date) && isThisWeek(t.due_date))
   const high = active.filter(t => t.priority === 'high')
 
-  function TaskList({ items }: { items: Task[] }) {
-    if (items.length === 0) return <div className="text-center py-10 text-sm text-gray-400">No tasks here</div>
-    return (
-      <div className="space-y-2">
-        {items.map(t => (
-          <TaskCard key={t.id} task={t} onToggle={handleToggle} onDelete={handleDelete} onEdit={task => { setEditingTask(task); setAddOpen(true) }} />
-        ))}
-      </div>
-    )
-  }
+  function handleEdit(task: Task) { setEditingTask(task); setAddOpen(true) }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -301,10 +310,10 @@ export default function TodoPage() {
                 High Priority{high.length > 0 && <span className="ml-1.5 rounded-full bg-red-200 px-1.5 py-0.5 text-xs">{high.length}</span>}
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="all"><TaskList items={active} /></TabsContent>
-            <TabsContent value="today"><TaskList items={today} /></TabsContent>
-            <TabsContent value="week"><TaskList items={thisWeek} /></TabsContent>
-            <TabsContent value="priority"><TaskList items={high} /></TabsContent>
+            <TabsContent value="all"><TaskList items={active} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} /></TabsContent>
+            <TabsContent value="today"><TaskList items={today} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} /></TabsContent>
+            <TabsContent value="week"><TaskList items={thisWeek} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} /></TabsContent>
+            <TabsContent value="priority"><TaskList items={high} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} /></TabsContent>
           </Tabs>
 
           {done.length > 0 && (
@@ -316,22 +325,22 @@ export default function TodoPage() {
               {showDone && (
                 <div className="mt-3 space-y-2">
                   {done.map(t => (
-                    <TaskCard key={t.id} task={t} onToggle={handleToggle} onDelete={handleDelete} onEdit={task => { setEditingTask(task); setAddOpen(true) }} />
+                    <TaskCard key={t.id} task={t} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} />
                   ))}
                 </div>
               )}
             </div>
           )}
+
+          <TaskForm
+            open={addOpen}
+            onOpenChange={open => { setAddOpen(open); if (!open) setEditingTask(null) }}
+            onSave={handleSaved}
+            clients={clients}
+            initial={editingTask}
+          />
         </>
       )}
-
-      <TaskForm
-        open={addOpen}
-        onOpenChange={open => { setAddOpen(open); if (!open) setEditingTask(null) }}
-        onSave={handleSaved}
-        clients={clients}
-        initial={editingTask}
-      />
     </div>
   )
 }
