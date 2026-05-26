@@ -31,7 +31,7 @@ const statusConfig: Record<InvoiceStatus, { label: string; variant: 'success' | 
   cancelled: { label: 'Cancelled', variant: 'secondary' },
 }
 
-export default async function RecentInvoices() {
+export async function RecentInvoices() {
   const invoices = await fetchRecentInvoices()
 
   return (

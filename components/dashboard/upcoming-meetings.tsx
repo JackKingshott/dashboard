@@ -19,7 +19,7 @@ function formatEventTime(dateTime?: string, date?: string) {
   return '—'
 }
 
-export default async function UpcomingMeetings() {
+export async function UpcomingMeetings() {
   const accessToken = process.env.GOOGLE_ACCESS_TOKEN
   const refreshToken = process.env.GOOGLE_REFRESH_TOKEN
 
@@ -81,7 +81,7 @@ export default async function UpcomingMeetings() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{event.summary ?? 'Untitled'}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {formatEventTime(event.start?.dateTime, event.start?.date)}
+                    {formatEventTime(event.start?.dateTime ?? undefined, event.start?.date ?? undefined)}
                   </p>
                   {(event.attendees?.length ?? 0) > 0 && (
                     <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">

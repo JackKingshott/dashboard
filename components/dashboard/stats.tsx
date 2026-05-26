@@ -57,7 +57,7 @@ async function fetchStats() {
   }
 }
 
-export default async function DashboardStats() {
+export async function DashboardStats() {
   const stats = await fetchStats()
 
   const cards = [

@@ -36,7 +36,7 @@ async function fetchTasks(): Promise<Task[]> {
   }
 }
 
-export default async function TasksWidget() {
+export async function TasksWidget() {
   const tasks = await fetchTasks()
 
   return (

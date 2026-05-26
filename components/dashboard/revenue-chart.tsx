@@ -52,7 +52,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-export default function RevenueChart() {
+export function RevenueChart() {
   const [data, setData] = useState<MonthlyRevenue[]>([])
   const [loading, setLoading] = useState(true)
 
