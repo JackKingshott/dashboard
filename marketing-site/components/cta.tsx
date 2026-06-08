@@ -13,7 +13,7 @@ export function CTA() {
           ads and tell you honestly whether — and how — we can help you scale.
         </p>
         <a
-          href="mailto:hello@scalestorm.com"
+          href="tel:+447862240214"
           className="group mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[#06070d] transition-transform hover:scale-105"
         >
           Book your free strategy call

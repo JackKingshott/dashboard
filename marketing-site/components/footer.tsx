@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap, AtSign, Globe, MessageCircle } from "lucide-react";
+import { AtSign, Globe, MessageCircle } from "lucide-react";
 
 export function Footer() {
   return (
@@ -7,11 +7,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#6d5bff] to-[#4f9bff]">
-                <Zap className="h-4.5 w-4.5 text-white" />
-              </div>
-              <span className="text-lg font-bold tracking-tight">Scale Storm</span>
+            <Link href="/" className="text-xl font-extrabold tracking-tight">
+              Scale<span className="glow-text">Storm</span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/50">
               We build and run Meta ad campaigns that turn ad spend into
@@ -40,8 +37,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="tel:+10000000000" className="hover:text-white">
-                  +1 (000) 000-0000
+                <a href="tel:+447862240214" className="hover:text-white">
+                  +44 7862 240214
                 </a>
               </li>
               <li>Remote-first · Worldwide</li>

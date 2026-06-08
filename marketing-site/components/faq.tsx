@@ -8,7 +8,7 @@ const faqs = [
   {
     question: "What kind of brands do you work with?",
     answer:
-      "We work primarily with ecommerce and service businesses doing at least $10k/month in revenue that are ready to invest seriously in paid acquisition on Meta.",
+      "We work primarily with ecommerce and service businesses doing at least £10k/month in revenue that are ready to invest seriously in paid acquisition on Meta.",
   },
   {
     question: "How fast will I see results?",

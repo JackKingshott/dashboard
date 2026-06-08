@@ -1,8 +1,8 @@
 const stats = [
-  { value: "$10M+", label: "Ad spend managed" },
+  { value: "£10M+", label: "Ad spend managed" },
+  { value: "£100M+", label: "Generated for clients" },
   { value: "4.2x", label: "Average ROAS" },
   { value: "120+", label: "Brands scaled" },
-  { value: "38%", label: "Avg. drop in CPA" },
 ];
 
 export function Stats() {
